@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "istream": "cpp",
-        "ostream": "cpp",
-        "system_error": "cpp",
-        "*.inc": "cpp",
-        "*.rh": "cpp"
-    }
-}
