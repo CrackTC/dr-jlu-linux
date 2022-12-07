@@ -1,105 +1,94 @@
-#include <csignal>
-#include <thread>
-#include <condition_variable>
-#include <mutex>
-#include <chrono>
 #include <cstring>
-#include "windows.h"
 #include "auth.h"
 #include "configparse.h"
-#include "../LogUtil.h"
 #include "login.h"
 
 struct config drcom_config;
-TCHAR *err_msg;
-HANDLE hLoginThread;
+char *err_msg;
 InterruptibleSleeper sleeper;
 
-DWORD WINAPI threadLogin(LPVOID lpParameter) {
-	// ·µ»ØÖµ·Ç0¼´ÎªµÇÂ¼Ê§°Ü
+int threadLogin() {
+	// è¿”å›å€¼é0å³ä¸ºç™»å½•å¤±è´¥
 	status = LOGGING;
-	logd(TEXT("status×´Ì¬±äÎªLOGGING"));
+	std::printf(("statusçŠ¶æ€å˜ä¸ºLOGGING\n"));
 	int result = dogcom();
-	logd(TEXT("\nresult = %d\n"), result);
+	std::printf(("\nresult = %d\n"), result);
 	switch (result) {
 	case 0:
 		break;
 	case CHECK_MAC:
-		err_msg = (TCHAR*)TEXT("[Tips] ÓĞÈËÕıÔÚÓÃ¸ÃMACµØÖ·Ê¹ÓÃ´ËÕËºÅ");
+		err_msg = (char*)"[Tips] æœ‰äººæ­£åœ¨ç”¨è¯¥MACåœ°å€ä½¿ç”¨æ­¤è´¦å·";
 		break;
 	case SERVER_BUSY:
-		err_msg = (TCHAR*)TEXT("[Tips] ·şÎñÆ÷·±Ã¦£¬ÇëÖØÊÔ");
+		err_msg = (char*)("[Tips] æœåŠ¡å™¨ç¹å¿™ï¼Œè¯·é‡è¯•");
 		break;
 	case WRONG_PASS:
-		err_msg = (TCHAR*)TEXT("[Tips] ÕËºÅ»òÃÜÂë´íÎó");
+		err_msg = (char*)("[Tips] è´¦å·æˆ–å¯†ç é”™è¯¯");
 		break;
 	case NOT_ENOUGH:
-		err_msg = (TCHAR*)TEXT("[Tips] ¸ÃÕËºÅÊ¹ÓÃÊ±³¤»òÁ÷Á¿³¬ÏŞ");
+		err_msg = (char*)("[Tips] è¯¥è´¦å·ä½¿ç”¨æ—¶é•¿æˆ–æµé‡è¶…é™");
 		break;
 	case FREEZE_UP:
-		err_msg = (TCHAR*)TEXT("[Tips] ¸ÃÕËºÅ±»¶³½á");
+		err_msg = (char*)("[Tips] è¯¥è´¦å·è¢«å†»ç»“");
 		break;
 	case NOT_ON_THIS_IP:
-		err_msg = (TCHAR*)TEXT("[Tips] IPµØÖ·²»Æ¥Åä£¬¸ÃÕËºÅÖ»ÄÜÓÃÓÚÖ¸¶¨IP");
+		err_msg = (char*)("[Tips] IPåœ°å€ä¸åŒ¹é…ï¼Œè¯¥è´¦å·åªèƒ½ç”¨äºæŒ‡å®šIP");
 		break;
 	case NOT_ON_THIS_MAC:
-		err_msg = (TCHAR*)TEXT("[Tips] MACµØÖ·²»Æ¥Åä£¬¸ÃÕËºÅÖ»ÄÜÓÃÓÚÖ¸¶¨µÄMACµØÖ·");
+		err_msg = (char*)("[Tips] MACåœ°å€ä¸åŒ¹é…ï¼Œè¯¥è´¦å·åªèƒ½ç”¨äºæŒ‡å®šçš„MACåœ°å€");
 		break;
 	case TOO_MUCH_IP:
-		err_msg = (TCHAR*)TEXT("[Tips] ¸ÃÕËºÅ¶ÔÓ¦¶à¸öIPµØÖ·");
+		err_msg = (char*)("[Tips] è¯¥è´¦å·å¯¹åº”å¤šä¸ªIPåœ°å€");
 		break;
 	case UPDATE_CLIENT:
-		err_msg = (TCHAR*)TEXT("[Tips] ¿Í»§¶Ë°æ±¾ºÅ´íÎó£¬ÇëÉı¼¶¿Í»§¶Ë");
+		err_msg = (char*)("[Tips] å®¢æˆ·ç«¯ç‰ˆæœ¬å·é”™è¯¯ï¼Œè¯·å‡çº§å®¢æˆ·ç«¯");
 		break;
 	case NOT_ON_THIS_IP_MAC:
-		err_msg = (TCHAR*)TEXT("[Tips] ¸ÃÕËºÅÖ»¿ÉÓÃÓÚÖ¸¶¨µÄIPºÍMACµØÖ·");
+		err_msg = (char*)("[Tips] è¯¥è´¦å·åªå¯ç”¨äºæŒ‡å®šçš„IPå’ŒMACåœ°å€");
 		break;
 	case MUST_USE_DHCP:
-		err_msg = (TCHAR*)TEXT("[Tips] Çë½«¼ÆËã»úµÄTCP/IPv4ÊôĞÔÉèÖÃÎªDHCP");
+		err_msg = (char*)("[Tips] è¯·å°†è®¡ç®—æœºçš„TCP/IPv4å±æ€§è®¾ç½®ä¸ºDHCP");
 		break;
 	case INIT_ERROR:
-		err_msg = (TCHAR*)TEXT("[Tips] ³ÌĞò³õÊ¼»¯Ê§°Ü");
+		err_msg = (char*)("[Tips] ç¨‹åºåˆå§‹åŒ–å¤±è´¥");
 		break;
 	case CREATE_SOCKET:
-		err_msg = (TCHAR*)TEXT("[Tips] ´´½¨socketÊ§°Ü");
+		err_msg = (char*)("[Tips] åˆ›å»ºsocketå¤±è´¥");
 		break;
 	case BIND_SOCKET:
-		err_msg = (TCHAR*)TEXT("[Tips] °ó¶¨socketÊ§°Ü Çë¼ì²éÊÇ·ñÓĞÆäËû¿Í»§¶ËÕ¼ÓÃÁË¶Ë¿Ú");
+		err_msg = (char*)("[Tips] ç»‘å®šsocketå¤±è´¥ è¯·æ£€æŸ¥æ˜¯å¦æœ‰å…¶ä»–å®¢æˆ·ç«¯å ç”¨äº†ç«¯å£");
 		break;
 	case SET_SOCK_OPT:
-		err_msg = (TCHAR*)TEXT("[Tips] ÉèÖÃsocketÑ¡ÏîÊ§°Ü");
+		err_msg = (char*)("[Tips] è®¾ç½®socketé€‰é¡¹å¤±è´¥");
 		break;
 	case CHALLENGE_ERROR:
-		err_msg = (TCHAR*)TEXT("[Tips] Óë·şÎñÆ÷ÎÕÊÖÊ§°Ü");
+		err_msg = (char*)("[Tips] ä¸æœåŠ¡å™¨æ¡æ‰‹å¤±è´¥");
 		break;
 	case USER_TERMINATED:
-		err_msg = (TCHAR*)TEXT("[Tips] ÓÃ»§×¢Ïú");
+		err_msg = (char*)("[Tips] ç”¨æˆ·æ³¨é”€");
 		break;
 	case UNKNOWN_ERROR:
 	default:
-		err_msg = (TCHAR*)TEXT("[Tips] Î´Öª´íÎó");
+		err_msg = (char*)("[Tips] æœªçŸ¥é”™è¯¯");
 		break;
 	}
 	if (!result)
-		logd(TEXT("%s"), err_msg);
-	// Ö»ÒªÊÇ·µ»Ø¹ıÀ´ÁËÒ»¶¨ÊÇÊ§°ÜÁË
+		std::printf(("%s\n"), err_msg);
+	// åªè¦æ˜¯è¿”å›è¿‡æ¥äº†ä¸€å®šæ˜¯å¤±è´¥äº†
 	status = OFFLINE;
-	logd(TEXT("status×´Ì¬±äÎªOFFLINE"));
-	SendMessage(FindWindow(szHiddenName, szHiddenTitle), WM_USER_LOGIN_FAILED, 0, 0);
+	std::printf(("statusçŠ¶æ€å˜ä¸ºOFFLINE\n"));
+    std::printf("å·²ç¦»çº¿\n");
+    if (!std::strcmp(err_msg, "[Tips] è´¦å·æˆ–å¯†ç é”™è¯¯")) {
+        std::printf("è´¦å·æˆ–å¯†ç é”™è¯¯ï¼Œå·²æ¸…é™¤ä¿å­˜çš„å¯†ç \n");
+    }
 	return 0;
 }
 
 void login(const char *account, const char *password, const unsigned char mac[6]) {
 	fillConfig(account, password, mac);
-	logd(TEXT("Ìî³äÍê³É"));
+	std::printf(("å¡«å……å®Œæˆ\n"));
 	sleeper.reset();
-
-	// ´´½¨Ò»¸öÏß³Ì²¢¹ÒÆğ¸ÃÏß³Ì
-	hLoginThread = CreateThread(nullptr, 0, threadLogin, nullptr, CREATE_SUSPENDED, nullptr);
-	// ÉèÖÃ¸ÃÏß³ÌµÄÓÅÏÈ¼¶
-	SetThreadPriority(hLoginThread, THREAD_PRIORITY_HIGHEST);
-	// Ö´ĞĞ¸ÃÏß³Ì
-	ResumeThread(hLoginThread);
+	threadLogin();
 }
 
 void logout() {

@@ -2,7 +2,7 @@
 #define AUTH_H_
 
 enum {
-	// DrĞ­Òé²¿·Ö
+	// Dråè®®éƒ¨åˆ†
 	CHECK_MAC = 0x01,
 	SERVER_BUSY = 0x02,
 	WRONG_PASS = 0x03,
@@ -15,23 +15,22 @@ enum {
 	NOT_ON_THIS_IP_MAC = 0x16,
 	MUST_USE_DHCP = 0x17,
 
-	// ×Ô¶¨Òå²¿·Ö
+	// è‡ªå®šä¹‰éƒ¨åˆ†
 	UNKNOWN_ERROR = 0x18,
 
-	// dogcom()²¿·Ö
-	INIT_ERROR		 = 0x19, // WSAStartup(sockVersion, &wsaData) != 0Ê§°Ü
-	CREATE_SOCKET	 = 0x20, // create socketÊ§°Ü
-	BIND_SOCKET		 = 0x21, // bind socketÊ§°Ü
-	SET_SOCK_OPT	 = 0x22, // set sock optÊ§°Ü
-	CHALLENGE_ERROR	 = 0x23, // challengeÊ§°Ü
-	USER_TERMINATED  = 0x24  // ÓÃ»§È¡Ïû²Ù×÷
+	// dogcom()éƒ¨åˆ†
+	INIT_ERROR		 = 0x19, // WSAStartup(sockVersion, &wsaData) != 0å¤±è´¥
+	CREATE_SOCKET	 = 0x20, // create socketå¤±è´¥
+	BIND_SOCKET		 = 0x21, // bind socketå¤±è´¥
+	SET_SOCK_OPT	 = 0x22, // set sock optå¤±è´¥
+	CHALLENGE_ERROR	 = 0x23, // challengeå¤±è´¥
+	USER_TERMINATED  = 0x24  // ç”¨æˆ·å–æ¶ˆæ“ä½œ
 };
 
-//  Êä³öÈÕÖ¾
+//  è¾“å‡ºæ—¥å¿—
 void print_packet(const char msg[10], const unsigned char *packet, int length);
 
 int dhcp_login(int sockfd, struct sockaddr_in addr, unsigned char seed[], unsigned char auth_information[]);
 int dogcom();
-void get_lasterror(const char *msg);
 
 #endif // AUTH_H_
