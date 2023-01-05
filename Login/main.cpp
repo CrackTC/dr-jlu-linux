@@ -1,8 +1,8 @@
 #include "./dogcom/login.h"
 
 // 登录信息
-struct tagLogInfo logInfo{"***REMOVED***", "***REMOVED***"};
-const char* strBuf = "***REMOVED***";
+struct tagLogInfo logInfo{"<username>", "<password>"};
+const char* strBuf = "xxxxxxxxxxxx"; // mac address
 
 int status = OFFLINE;
 
