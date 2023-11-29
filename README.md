@@ -19,5 +19,10 @@ const char* strBuf = "1a2b3c4d5e6f";
 
 3. compile
 ```shell
-g++ -march=native -O2 -o bin/jlu-drcom Login/main.cpp Login/dogcom/*
+make build
+```
+
+4. run
+```shell
+make run
 ```
