@@ -17,6 +17,7 @@ char getCharFromInt(int x) {
 }
 int getIntFromChar(char x) {
 	if (x <= '9' && x >= '0') return x - '0';
+	if (x <= 'F' && x >= 'A') return x - 'A' + 10;
 	return x - 'a' + 10;
 }
 
