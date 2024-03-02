@@ -11,7 +11,7 @@ git clone https://github.com/CrackTC/dr-jlu-linux.git
 ```
 
 2. edit `Login/main.cpp`, update `logInfo` with your username and password,
- and `strBuf` with your MAC address
+ and `strBuf` with your MAC address (**LOWER CASE**)
 ```cpp
 struct tagLogInfo logInfo{"xiaoming", "123456"};
 const char* strBuf = "1a2b3c4d5e6f";
