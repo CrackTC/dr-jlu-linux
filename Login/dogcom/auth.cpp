@@ -1,4 +1,6 @@
 #include <cstring>
+#include <cstdio>
+#include <cstdlib>
 #include <arpa/inet.h>
 
 #include "auth.h"

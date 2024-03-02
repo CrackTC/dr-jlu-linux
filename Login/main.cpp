@@ -1,4 +1,5 @@
 #include "./dogcom/login.h"
+#include <cstdio>
 
 // 登录信息
 struct tagLogInfo logInfo{"<username>", "<password>"};

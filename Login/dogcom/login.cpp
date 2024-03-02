@@ -2,6 +2,7 @@
 #include "auth.h"
 #include "configparse.h"
 #include "login.h"
+#include <cstdio>
 
 struct config drcom_config;
 char *err_msg;
